@@ -40,10 +40,10 @@ export default function GenerateWallet() {
             </h1>
             <button onClick={handleGenerateWallet}>Generate Wallet</button>
             {wallets.length > 0 && (
-                <ul className="p-7 flex gap-3 flex-col md:flex-row">
+                <ul className="p-7 flex gap-3 flex-col ">
                     {wallets.map((wallet) => (
                         <li key={wallet.index} className="border-2 rounded">
-                            <div className="p-6">
+                            <div className="p-6 container ">
                                 <h2 className="text-sm font-extrabold underline lg:text-base py-2">
                                     Wallet {wallet.index}{" "}
                                 </h2>
@@ -53,12 +53,15 @@ export default function GenerateWallet() {
                                     </span>
                                     {wallet.publicKey}{" "}
                                 </p>
-                                <p className="text-xs lg:text-base">
+                                <p className="text-xs lg:text-base flex">
                                     {" "}
                                     <span className="font-bold">
                                         Private Key :
                                     </span>
-                                    {wallet.privateKey}
+                                    <span className="truncate block">
+                                        {" "}
+                                        {wallet.privateKey}{" "}
+                                    </span>
                                 </p>
                             </div>
                         </li>
