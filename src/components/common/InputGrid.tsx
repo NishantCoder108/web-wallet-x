@@ -40,8 +40,8 @@ const InputGrid: React.FC<InputGridProps> = ({
         const formData = new FormData(e.currentTarget);
         const formDataEntries = Object.fromEntries(formData.entries());
 
-        const formValues = Object.values(formDataEntries).map(
-            (val) => val as string
+        const formValues = Object.values(formDataEntries).map((val) =>
+            (val as string).trim()
         );
         console.log({ formData }, { formDataEntries });
         console.log("Form Values:", formValues);

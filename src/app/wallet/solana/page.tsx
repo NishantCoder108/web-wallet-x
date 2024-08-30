@@ -22,7 +22,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Copy, Eye, Trash } from "lucide-react";
+import { Copy, Eye, EyeOff, Grid2X2, List, Trash } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,10 +38,11 @@ import AppAlertDialog from "@/components/common/AppAlertDialog";
 
 const SolanaWallet = () => {
     const formRef = useRef<HTMLFormElement>(null);
-    const [seedArr, setSeeArr] = useState<string[]>([]);
     const [mnemonicArr, setMnemonicArr] = useState<string[]>([]);
     const [isGridView, setIsGridView] = useState<boolean>(false);
     const [walletIdx, setWalletIdx] = useState<number>(0);
+    const [visiblePrivateKeys, setVisiblePrivateKeys] = useState<boolean[]>([]);
+    console.log({ visiblePrivateKeys });
     const [walletList, setWalletList] = useState<
         {
             privateKey: string;
@@ -52,11 +53,14 @@ const SolanaWallet = () => {
     const handleSubmit = (seedValue: string[]) => {
         console.log("handleSubmit Val", seedValue);
 
-        if (!validateMnemonic(seedValue.join(" "))) {
+        const seedPhrase = seedValue.join(" ");
+        if (!validateMnemonic(seedPhrase)) {
             toast.error("Invalid recovery phrase, Please try again.");
             return;
         }
-        setSeeArr(seedValue);
+
+        console.log({ seedPhrase });
+        handleGenerateWallet(seedPhrase);
     };
 
     const triggerInputGridForm = () => {
@@ -66,7 +70,8 @@ const SolanaWallet = () => {
         }
     };
 
-    const handleGenerateWallet = () => {
+    const handleGenerateWallet = (importedPhrase?: string) => {
+        console.log({ importedPhrase });
         const storedData = localStorage.getItem("storeWallet");
 
         const parsedData = storedData ? JSON.parse(storedData) : null;
@@ -74,7 +79,11 @@ const SolanaWallet = () => {
         console.log({ parsedData });
 
         const mnemonic =
-            mnemonicArr.length > 0 ? mnemonicArr.join(" ") : generateMnemonic();
+            mnemonicArr.length > 0
+                ? mnemonicArr.join(" ")
+                : importedPhrase
+                ? importedPhrase
+                : generateMnemonic();
         console.log({ mnemonic });
         const phraseArr = mnemonic.split(" ");
         setMnemonicArr(phraseArr);
@@ -98,7 +107,7 @@ const SolanaWallet = () => {
                 publicKey: publicKey,
             },
         ]);
-
+        setVisiblePrivateKeys((prev) => [...prev, false]);
         toast.success("Wallet generated successfully!");
 
         setWalletIdx((prev) => prev + 1);
@@ -165,9 +174,17 @@ const SolanaWallet = () => {
             localStorage.setItem("wallets", JSON.stringify(storeWallet));
             setWalletList([]);
             setMnemonicArr([]);
+            setWalletIdx(0);
         }
     };
 
+    const togglePrivateKeyVisibility = (index: number) => {
+        setVisiblePrivateKeys(
+            visiblePrivateKeys.map((visible, i) =>
+                i === index ? !visible : visible
+            )
+        );
+    };
     useEffect(() => {
         const storeData = localStorage.getItem("wallets");
 
@@ -181,6 +198,7 @@ const SolanaWallet = () => {
             setWalletList(walletList);
             setMnemonicArr(mnemonicArr);
             setWalletIdx(walletIdx);
+            setVisiblePrivateKeys(Array(walletList.length).fill(false));
         }
     }, []);
     return (
@@ -321,8 +339,19 @@ const SolanaWallet = () => {
                                 Wallet Portfolio
                             </h1>
                             <div className="flex gap-3">
+                                {walletList.length > 1 && (
+                                    <Button
+                                        variant={"ghost"}
+                                        onClick={() =>
+                                            setIsGridView(!isGridView)
+                                        }
+                                        className="hidden md:block"
+                                    >
+                                        {isGridView ? <Grid2X2 /> : <List />}
+                                    </Button>
+                                )}
                                 <Button
-                                    onClick={handleGenerateWallet}
+                                    onClick={() => handleGenerateWallet()}
                                     className=""
                                 >
                                     Add
@@ -398,7 +427,7 @@ const SolanaWallet = () => {
                                                                         i
                                                                     )
                                                                 }
-                                                                className="text-destructive"
+                                                                className="text-destructive "
                                                             >
                                                                 Delete
                                                             </AlertDialogAction>
@@ -436,23 +465,31 @@ const SolanaWallet = () => {
                                                             }
                                                             className="text-primary/80 font-medium cursor-pointer hover:text-primary transition-all duration-300 truncate"
                                                         >
-                                                            {
-                                                                wallet.privateKey
-                                                                // visiblePrivateKeys[index]
-                                                                //   ? wallet.privateKey
-                                                                //   : "•".repeat(wallet.mnemonic.length)
-                                                            }
+                                                            {visiblePrivateKeys[
+                                                                i
+                                                            ]
+                                                                ? wallet.privateKey
+                                                                : "•".repeat(
+                                                                      wallet
+                                                                          .privateKey
+                                                                          .length
+                                                                  )}
                                                         </p>
                                                         <Button
                                                             variant="ghost"
-                                                            // onClick={() => togglePrivateKeyVisibility(index)}
+                                                            onClick={() =>
+                                                                togglePrivateKeyVisibility(
+                                                                    i
+                                                                )
+                                                            }
                                                         >
-                                                            {/* {visiblePrivateKeys[index] ? (
-                          <EyeOff className="size-4" />
-                        ) : (
-                          <Eye className="size-4" />
-                        )} */}
-                                                            <Eye className="size-4" />
+                                                            {visiblePrivateKeys[
+                                                                i
+                                                            ] ? (
+                                                                <EyeOff className="size-4" />
+                                                            ) : (
+                                                                <Eye className="size-4" />
+                                                            )}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -461,8 +498,6 @@ const SolanaWallet = () => {
                                     </motion.div>
                                 ))}
                         </div>
-
-                        {/*  */}
                     </motion.div>
                 </div>
             )}
