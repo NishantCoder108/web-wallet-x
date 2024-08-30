@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { easeInOut, motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,12 +22,26 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Copy } from "lucide-react";
+import { Copy, Eye, Trash } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import AppAlertDialog from "@/components/common/AppAlertDialog";
 
 const SolanaWallet = () => {
     const formRef = useRef<HTMLFormElement>(null);
     const [seedArr, setSeeArr] = useState<string[]>([]);
     const [mnemonicArr, setMnemonicArr] = useState<string[]>([]);
+    const [isGridView, setIsGridView] = useState<boolean>(false);
+    const [walletIdx, setWalletIdx] = useState<number>(0);
     const [walletList, setWalletList] = useState<
         {
             privateKey: string;
@@ -53,13 +67,22 @@ const SolanaWallet = () => {
     };
 
     const handleGenerateWallet = () => {
-        const mnemonic = generateMnemonic();
+        const storedData = localStorage.getItem("storeWallet");
+
+        const parsedData = storedData ? JSON.parse(storedData) : null;
+
+        console.log({ parsedData });
+
+        const mnemonic =
+            mnemonicArr.length > 0 ? mnemonicArr.join(" ") : generateMnemonic();
         console.log({ mnemonic });
-        setMnemonicArr(mnemonic.split(" "));
+        const phraseArr = mnemonic.split(" ");
+        setMnemonicArr(phraseArr);
         const seed = mnemonicToSeedSync(mnemonic);
         console.log({ seed });
+
         //Derivation path
-        const path = `m/44'/501'/0'/0'`;
+        const path = `m/44'/501'/${walletIdx}'/0'`;
         const derivedSeed = derivePath(path, seed.toString("hex")).key;
 
         const secret = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
@@ -75,12 +98,91 @@ const SolanaWallet = () => {
                 publicKey: publicKey,
             },
         ]);
+
+        toast.success("Wallet generated successfully!");
+
+        setWalletIdx((prev) => prev + 1);
+        const storeWallet = {
+            wallets: {
+                ...parsedData?.wallets,
+                solana: {
+                    ...parsedData?.wallets?.solana,
+                    walletIdx: walletIdx,
+                    mnemonicArr: phraseArr,
+                    walletList: [
+                        ...walletList,
+                        { publicKey, privateKey: convertSecretToBase58 },
+                    ],
+                },
+            },
+        };
+        localStorage.setItem("wallets", JSON.stringify(storeWallet));
     };
 
     const copyToClipboard = (secretPhrase: string) => {
         navigator.clipboard.writeText(secretPhrase);
         toast.success("Copied to clipboard!");
     };
+
+    const handleDeleteWallet = (itemId: number) => {
+        console.log("Delete Id", itemId);
+
+        const tempWallets = walletList;
+
+        const deletedWallet = tempWallets.splice(itemId, 1);
+        console.log({ deletedWallet });
+
+        console.log({ tempWallets });
+        setWalletList([...tempWallets]);
+        const storeWallet = {
+            wallets: {
+                solana: {
+                    walletIdx: walletIdx,
+                    mnemonicArr: [...mnemonicArr],
+                    walletList: [...tempWallets],
+                },
+            },
+        };
+        localStorage.setItem("wallets", JSON.stringify(storeWallet));
+    };
+    console.log({ walletList });
+
+    const handleDeleteAllWallets = () => {
+        const storeData = localStorage.getItem("wallets");
+
+        const parsedData = storeData ? JSON.parse(storeData) : null;
+
+        if (parsedData.wallets.solana) {
+            const storeWallet = {
+                wallets: {
+                    solana: {
+                        walletIdx: 0,
+                        mnemonicArr: [],
+                        walletList: [],
+                    },
+                },
+            };
+            localStorage.setItem("wallets", JSON.stringify(storeWallet));
+            setWalletList([]);
+            setMnemonicArr([]);
+        }
+    };
+
+    useEffect(() => {
+        const storeData = localStorage.getItem("wallets");
+
+        const parsedData = storeData ? JSON.parse(storeData) : null;
+
+        if (parsedData?.wallets?.solana) {
+            const walletList = parsedData.wallets.solana.walletList;
+            const mnemonicArr = parsedData.wallets.solana.mnemonicArr;
+            const walletIdx = parsedData.wallets.solana.walletIdx;
+
+            setWalletList(walletList);
+            setMnemonicArr(mnemonicArr);
+            setWalletIdx(walletIdx);
+        }
+    }, []);
     return (
         <div
             className={` min-h-[70vh] pt-16 pb-2 mb-16 ${roboto_mono.className}`}
@@ -135,94 +237,235 @@ const SolanaWallet = () => {
                     </div>
                 </motion.div>
             )}
-            {/* Showing Mnemonic phrases */}
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{
-                    opacity: 1,
-                    y: 0,
-                }}
-                transition={{
-                    ease: easeInOut,
-                    duration: 0.3,
-                }}
-                className={roboto_mono.className}
-            >
-                <Accordion type="single" collapsible>
-                    <AccordionItem value="item-1">
-                        <AccordionTrigger className="text-2xl md:text-3xl font-bold tracking-tighter hover:no-underline">
-                            Your Secret Phrase
-                        </AccordionTrigger>
 
-                        <AccordionContent
-                            onClick={() =>
-                                copyToClipboard(mnemonicArr.join(" "))
-                            }
+            {mnemonicArr.length > 0 && walletList.length > 0 && (
+                <div>
+                    {/* Showing Mnemonic phrases */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                        }}
+                        transition={{
+                            ease: easeInOut,
+                            duration: 0.3,
+                        }}
+                        className={roboto_mono.className}
+                    >
+                        <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="item-1"
                         >
-                            <motion.div
-                                transition={{
-                                    ease: easeInOut,
-                                    duration: 0.3,
-                                }}
-                                animate={{
-                                    opacity: 1,
-                                    y: 0,
-                                }}
-                                initial={{
-                                    opacity: 0,
-                                    y: -20,
-                                }}
-                                className="hover:cursor-pointer"
-                            >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 dark:bg-slate-900 p-6 rounded">
-                                    {mnemonicArr.map((item) => (
-                                        <p className="text-red-500 font-semibold border p-3 flex items-center justify-center rounded">
-                                            {item}
-                                        </p>
-                                    ))}
-                                </div>
+                            <AccordionItem value="item-1">
+                                <AccordionTrigger className="text-3xl md:text-4xl font-bold  tracking-tighter hover:no-underline">
+                                    Your Secret Phrase
+                                </AccordionTrigger>
 
-                                <div className="text-sm md:text-base text-primary/50 flex w-full  dark:bg-slate-900 p-6 gap-3 hover:text-slate-100">
-                                    <Copy /> Click Anywhere To Copy
-                                </div>
-                            </motion.div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-            </motion.div>
+                                <AccordionContent
+                                    onClick={() =>
+                                        copyToClipboard(mnemonicArr.join(" "))
+                                    }
+                                >
+                                    <motion.div
+                                        transition={{
+                                            ease: easeInOut,
+                                            duration: 0.3,
+                                        }}
+                                        animate={{
+                                            opacity: 1,
+                                            y: 0,
+                                        }}
+                                        initial={{
+                                            opacity: 0,
+                                            y: -20,
+                                        }}
+                                        className="hover:cursor-pointer"
+                                    >
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 dark:bg-slate-900 p-6 rounded">
+                                            {mnemonicArr.map((item) => (
+                                                <Fragment key={item}>
+                                                    <p className="text-red-500 font-semibold border p-3 flex items-center justify-center rounded">
+                                                        {item}
+                                                    </p>
+                                                </Fragment>
+                                            ))}
+                                        </div>
 
-            {/* Showing Public and Private Keys */}
+                                        <div className="text-sm md:text-base text-primary/50 flex w-full  dark:bg-slate-900 p-6 gap-3 dark:hover:text-slate-100 ">
+                                            <Copy /> Click Anywhere To Copy
+                                        </div>
+                                    </motion.div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </motion.div>
+                    {/* Showing Public and Private Keys */}
+                    <motion.div
+                        initial={{
+                            opacity: 0,
+                            y: -20,
+                        }}
+                        transition={{
+                            ease: easeInOut,
+                            duration: 0.3,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                        }}
+                    >
+                        <div className="flex items-center justify-between">
+                            <h1 className="text-3xl md:text-4xl font-bold tracking-tighter py-9">
+                                Wallet Portfolio
+                            </h1>
+                            <div className="flex gap-3">
+                                <Button
+                                    onClick={handleGenerateWallet}
+                                    className=""
+                                >
+                                    Add
+                                </Button>
+                                <AppAlertDialog
+                                    walletId={-1}
+                                    handleClick={handleDeleteAllWallets}
+                                />
+                            </div>
+                        </div>
 
-            <motion.div
-                initial={{
-                    opacity: 0,
-                    y: -20,
-                }}
-                transition={{
-                    ease: easeInOut,
-                    duration: 0.3,
-                }}
-                animate={{
-                    opacity: 1,
-                    y: 0,
-                }}
-            >
-                <ul className="border py-6 flex flex-col items-center ">
-                    {walletList.length > 0 &&
-                        walletList.map((wallet, i) => (
-                            <li key={i}>
-                                <div>
-                                    <p className="font-semibold ">
-                                        {" "}
-                                        Wallet {i + 1}{" "}
-                                    </p>
-                                    <p> Public Key : {wallet.publicKey} </p>
-                                    <p> Private Key : {wallet.privateKey} </p>
-                                </div>
-                            </li>
-                        ))}
-                </ul>
-            </motion.div>
+                        <div
+                            className={`grid gap-6 grid-cols-1 col-span-1  ${
+                                isGridView
+                                    ? "md:grid-cols-2 lg:grid-cols-3"
+                                    : ""
+                            }`}
+                        >
+                            {walletList.length > 0 &&
+                                walletList.map((wallet, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{
+                                            opacity: 1,
+                                            y: 0,
+                                        }}
+                                        transition={{
+                                            ease: easeInOut,
+                                            duration: 0.3,
+                                        }}
+                                        className="flex flex-col rounded-2xl border border-primary/10"
+                                    >
+                                        <div className="flex flex-col  px-8 py-6">
+                                            <div className="flex justify-between py-3">
+                                                <h3 className="font-bold text-2xl md:text-3xl tracking-tighter ">
+                                                    Wallet {i + 1}
+                                                </h3>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="flex gap-2 items-center"
+                                                        >
+                                                            <Trash className="size-4 text-destructive" />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>
+                                                                Are you sure you
+                                                                want to delete
+                                                                this wallet?
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This action
+                                                                cannot be
+                                                                undone. This
+                                                                will permanently
+                                                                delete your
+                                                                wallets and keys
+                                                                from local
+                                                                storage.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>
+                                                                Cancel
+                                                            </AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() =>
+                                                                    handleDeleteWallet(
+                                                                        i
+                                                                    )
+                                                                }
+                                                                className="text-destructive"
+                                                            >
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
+
+                                            <div className="flex flex-col  gap-8 px-8 py-4 rounded-2xl bg-secondary/50">
+                                                <div
+                                                    className="flex flex-col w-full gap-2"
+                                                    onClick={() =>
+                                                        copyToClipboard(
+                                                            wallet.publicKey
+                                                        )
+                                                    }
+                                                >
+                                                    <span className="text-lg md:text-xl font-bold tracking-tighter">
+                                                        Public Key
+                                                    </span>
+                                                    <p className="text-primary/80 font-medium cursor-pointer hover:text-primary transition-all duration-300 truncate">
+                                                        {wallet.publicKey}
+                                                    </p>
+                                                </div>
+                                                <div className="flex flex-col w-full gap-2">
+                                                    <span className="text-lg md:text-xl font-bold tracking-tighter">
+                                                        Private Key
+                                                    </span>
+                                                    <div className="flex justify-between w-full items-center gap-2">
+                                                        <p
+                                                            onClick={() =>
+                                                                copyToClipboard(
+                                                                    wallet.privateKey
+                                                                )
+                                                            }
+                                                            className="text-primary/80 font-medium cursor-pointer hover:text-primary transition-all duration-300 truncate"
+                                                        >
+                                                            {
+                                                                wallet.privateKey
+                                                                // visiblePrivateKeys[index]
+                                                                //   ? wallet.privateKey
+                                                                //   : "•".repeat(wallet.mnemonic.length)
+                                                            }
+                                                        </p>
+                                                        <Button
+                                                            variant="ghost"
+                                                            // onClick={() => togglePrivateKeyVisibility(index)}
+                                                        >
+                                                            {/* {visiblePrivateKeys[index] ? (
+                          <EyeOff className="size-4" />
+                        ) : (
+                          <Eye className="size-4" />
+                        )} */}
+                                                            <Eye className="size-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                        </div>
+
+                        {/*  */}
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 };
