@@ -1,7 +1,12 @@
+import EthereumWalletActions from "@/components/wallets/EthereumWalletActions";
 import React from "react";
 
-const page = () => {
-    return <div>Ethereum</div>;
+const EthereumWallet = () => {
+    return (
+        <>
+            <EthereumWalletActions />
+        </>
+    );
 };
 
-export default page;
+export default EthereumWallet;
