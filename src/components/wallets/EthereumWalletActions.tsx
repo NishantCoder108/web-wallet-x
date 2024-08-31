@@ -224,9 +224,9 @@ const EthereumWalletActions = () => {
                             />
                         </div>
                         <p className="text-sm  text-primary/80 pb-3">
-                            Note: To import an existing wallet, please enter
+                            {`Note: To import an existing wallet, please enter
                             your seed phrase above. If you'd like to create a
-                            new wallet, click on 'Generate Wallet'
+                            new wallet, click on 'Generate Wallet'`}
                         </p>
                         <div className="flex justify-evenly items-center  gap-6">
                             <Button
