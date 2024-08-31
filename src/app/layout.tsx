@@ -9,8 +9,22 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "WebWalletX Wallet",
-    description: "Web Wallet X",
+    title: "WebWalletX",
+    description: "Your Personal Web3 Wallet.",
+    icons: [
+        {
+            rel: "icon",
+            type: "image/x-icon",
+            url: "/favicon.ico",
+            media: "(prefers-color-scheme: light)",
+        },
+        {
+            rel: "icon",
+            type: "image/png",
+            url: "/favicon.ico",
+            media: "(prefers-color-scheme: dark)",
+        },
+    ],
 };
 
 export default function RootLayout({

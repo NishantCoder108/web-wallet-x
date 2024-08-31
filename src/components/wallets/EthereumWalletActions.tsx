@@ -37,7 +37,7 @@ import {
 import AppAlertDialog from "@/components/common/AppAlertDialog";
 import { HDNodeWallet } from "ethers";
 import { Wallet } from "ethers";
-import { getLocalWallet } from "@/utils/localStorage";
+import { getLocalWallet } from "@/lib/utils";
 
 const EthereumWalletActions = () => {
     const formRef = useRef<HTMLFormElement>(null);
