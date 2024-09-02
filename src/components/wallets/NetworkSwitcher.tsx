@@ -15,20 +15,17 @@ const NetworkSwitcher: React.FC = () => {
         (cluster as string) || "devnet"
     );
     useEffect(() => {
-        const rpcUrl =
-            selectedCluster === "mainnet"
-                ? process.env.NEXT_PUBLIC_MAINNET_RPC_URL
-                : process.env.NEXT_PUBLIC_DEVNET_RPC_URL;
+        const updateUrl = () => {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set("cluster", selectedCluster);
 
-        console.log(`Using ${selectedCluster} with RPC URL: ${rpcUrl}`);
+            const newUrl = `${
+                currentUrl.pathname
+            }?${currentUrl.searchParams.toString()}`;
+            router.push(newUrl);
+        };
 
-        const checkUrl = pathname.includes("?");
-        const url = checkUrl
-            ? `${pathname}&cluster=${selectedCluster}`
-            : `${pathname}?cluster=${selectedCluster}`;
-        console.log("URL", url);
-
-        router.push(url);
+        updateUrl();
     }, [selectedCluster]);
 
     console.log({ selectedCluster });

@@ -5,14 +5,15 @@ import React, { useEffect, useState } from "react";
 const Balance = () => {
     const [balance, setBalance] = useState<number | null>(null);
     const searchParam = useSearchParams();
-    const walletAddress = searchParam.get("pubkey") || "";
+    const walletAddress = searchParam.get("pubkey") as string;
+    const cluster = searchParam.get("cluster") as string;
 
     console.log({ searchParam });
 
     useEffect(() => {
         async function fetchBalance() {
             try {
-                const balance = await getSolanaBalance(walletAddress);
+                const balance = await getSolanaBalance(walletAddress, cluster);
 
                 console.log({ balance });
                 setBalance(balance);
@@ -23,7 +24,7 @@ const Balance = () => {
         }
 
         fetchBalance();
-    }, [walletAddress]);
+    }, [walletAddress, cluster]);
 
     return (
         <div className=" font-extrabold text-4xl md:text-6xl  tracking-tighter my-8">

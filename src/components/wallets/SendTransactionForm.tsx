@@ -19,8 +19,8 @@ const SendTransactionForm = () => {
     const [error, setError] = useState<string | null>(null);
 
     const searchParam = useSearchParams();
-    const walletAddress = searchParam.get("pubkey") || "";
-    const cluster = searchParam.get("cluster") || "mainnet";
+    const walletAddress = searchParam.get("pubkey") as string;
+    const cluster = searchParam.get("cluster") as string;
 
     const handleSendTransaction = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,7 +39,8 @@ const SendTransactionForm = () => {
                 const signature = await sendSolTransaction(
                     senderSecretKey,
                     recipientAddress,
-                    amount
+                    amount,
+                    cluster
                 );
                 console.log({ signature }, { recipientAddress }, amount);
                 setTxSignature(signature);

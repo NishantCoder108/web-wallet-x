@@ -23,19 +23,20 @@ const TransactionHistory = () => {
     >([]);
     const [loading, setLoading] = useState<boolean>(true);
     const searchParam = useSearchParams();
-    const walletAddress = searchParam.get("pubkey") || "";
-    const cluster = searchParam.get("cluster") || "mainnet";
+    const walletAddress = searchParam.get("pubkey") as string;
+    const cluster = searchParam.get("cluster") as string;
     console.log({ searchParam, cluster });
+
     useEffect(() => {
         async function fetchHistory() {
             setLoading(true);
-            const history = await getTransactionHistory(walletAddress);
+            const history = await getTransactionHistory(walletAddress, cluster);
             setTransactions(history);
             setLoading(false);
         }
 
         fetchHistory();
-    }, [walletAddress]);
+    }, [walletAddress, cluster]);
 
     return (
         <div className={`p-6  rounded-lg shadow-lg ${roboto_mono.className}`}>

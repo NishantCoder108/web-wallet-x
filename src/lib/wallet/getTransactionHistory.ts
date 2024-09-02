@@ -3,13 +3,15 @@ import {
     PublicKey,
     ParsedTransactionWithMeta,
 } from "@solana/web3.js";
-
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL as string;
+import { getRpcUrl } from "../utils";
 
 export async function getTransactionHistory(
-    address: string
+    address: string,
+    cluster: string
 ): Promise<ParsedTransactionWithMeta[]> {
     try {
+        const RPC_URL = getRpcUrl(cluster);
+
         const connection = new Connection(RPC_URL);
         const publicKey = new PublicKey(address);
 

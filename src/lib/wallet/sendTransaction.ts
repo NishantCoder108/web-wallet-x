@@ -7,15 +7,16 @@ import {
     sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import { Keypair } from "@solana/web3.js";
-
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL as string;
+import { getRpcUrl } from "../utils";
 
 export async function sendSolTransaction(
     senderSecretKey: Uint8Array,
     recipientAddress: string,
-    amount: number
+    amount: number,
+    cluster: string
 ) {
     try {
+        const RPC_URL = getRpcUrl(cluster);
         const connection = new Connection(RPC_URL);
 
         const senderKeypair = Keypair.fromSecretKey(senderSecretKey);

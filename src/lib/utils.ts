@@ -23,3 +23,11 @@ export const copyToClipboard = (secretPhrase: string) => {
 export const convertToUint8ArrFromBase58 = (base58String: string) => {
     return bs58.decode(base58String);
 };
+
+export const getRpcUrl = (cluster: string): string => {
+    if (cluster === "mainnet") {
+        return process.env.NEXT_PUBLIC_MAINNET_RPC_URL || "";
+    } else {
+        return process.env.NEXT_PUBLIC_DEVNET_RPC_URL || "";
+    }
+};
