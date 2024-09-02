@@ -1,11 +1,14 @@
 import Dashboard from "@/components/wallets/Dashboard";
-import React from "react";
+import { roboto_mono } from "@/lib/fonts";
+import React, { Suspense } from "react";
 
 const WalletDashboard = () => {
     return (
-        <div>
+        <Suspense
+            fallback={<div className={roboto_mono.className}>Loading...</div>}
+        >
             <Dashboard />
-        </div>
+        </Suspense>
     );
 };
 
