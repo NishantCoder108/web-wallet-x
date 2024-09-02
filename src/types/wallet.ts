@@ -3,3 +3,8 @@ export interface IWallet {
     publicKey: string;
     privateKey: string;
 }
+
+export interface IWalletKeyPair {
+    privateKey: string;
+    publicKey: string;
+}
