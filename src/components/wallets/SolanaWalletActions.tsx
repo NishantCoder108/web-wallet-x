@@ -35,14 +35,18 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import AppAlertDialog from "@/components/common/AppAlertDialog";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { copyToClipboard } from "@/lib/utils";
 
 const SolanaWalletActions = () => {
+    const router = useRouter();
     const formRef = useRef<HTMLFormElement>(null);
     const [mnemonicArr, setMnemonicArr] = useState<string[]>([]);
     const [isGridView, setIsGridView] = useState<boolean>(false);
     const [walletIdx, setWalletIdx] = useState<number>(0);
     const [visiblePrivateKeys, setVisiblePrivateKeys] = useState<boolean[]>([]);
-    console.log({ visiblePrivateKeys });
+
     const [walletList, setWalletList] = useState<
         {
             privateKey: string;
@@ -128,12 +132,11 @@ const SolanaWalletActions = () => {
         localStorage.setItem("wallets", JSON.stringify(storeWallet));
     };
 
-    const copyToClipboard = (secretPhrase: string) => {
-        navigator.clipboard.writeText(secretPhrase);
-        toast.success("Copied to clipboard!");
-    };
-
-    const handleDeleteWallet = (itemId: number) => {
+    const handleDeleteWallet = (
+        e: React.MouseEvent<HTMLButtonElement>,
+        itemId: number
+    ) => {
+        e.stopPropagation();
         console.log("Delete Id", itemId);
 
         const tempWallets = walletList;
@@ -178,7 +181,11 @@ const SolanaWalletActions = () => {
         }
     };
 
-    const togglePrivateKeyVisibility = (index: number) => {
+    const togglePrivateKeyVisibility = (
+        e: React.MouseEvent<HTMLButtonElement>,
+        index: number
+    ) => {
+        e.stopPropagation();
         setVisiblePrivateKeys(
             visiblePrivateKeys.map((visible, i) =>
                 i === index ? !visible : visible
@@ -282,7 +289,7 @@ const SolanaWalletActions = () => {
                                 </AccordionTrigger>
 
                                 <AccordionContent
-                                    onClick={() =>
+                                    onClick={(e) =>
                                         copyToClipboard(mnemonicArr.join(" "))
                                     }
                                 >
@@ -372,6 +379,11 @@ const SolanaWalletActions = () => {
                         >
                             {walletList.length > 0 &&
                                 walletList.map((wallet, i) => (
+                                    // <Link
+                                    //     href={`/wallet/solana/${wallet.publicKey}`}
+                                    //     key={wallet.publicKey}
+                                    //     className="hover:rounded-xl   hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    // >
                                     <motion.div
                                         key={i}
                                         initial={{ opacity: 0, y: -20 }}
@@ -383,7 +395,12 @@ const SolanaWalletActions = () => {
                                             ease: easeInOut,
                                             duration: 0.3,
                                         }}
-                                        className="flex flex-col rounded-2xl border border-primary/10"
+                                        className="hover:rounded-xl hover:cursor-pointer   hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col rounded-2xl border border-primary/10"
+                                        onClick={() => {
+                                            router.push(
+                                                `/wallet/solana/dashboard?pubkey=${wallet.publicKey}`
+                                            );
+                                        }}
                                     >
                                         <div className="flex flex-col  px-8 py-6">
                                             <div className="flex justify-between py-3">
@@ -395,6 +412,9 @@ const SolanaWalletActions = () => {
                                                         <Button
                                                             variant="ghost"
                                                             className="flex gap-2 items-center"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                            }}
                                                         >
                                                             <Trash className="size-4 text-destructive" />
                                                         </Button>
@@ -418,12 +438,17 @@ const SolanaWalletActions = () => {
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>
+                                                            <AlertDialogCancel
+                                                                onClick={(e) =>
+                                                                    e.stopPropagation()
+                                                                }
+                                                            >
                                                                 Cancel
                                                             </AlertDialogCancel>
                                                             <AlertDialogAction
-                                                                onClick={() =>
+                                                                onClick={(e) =>
                                                                     handleDeleteWallet(
+                                                                        e,
                                                                         i
                                                                     )
                                                                 }
@@ -439,7 +464,7 @@ const SolanaWalletActions = () => {
                                             <div className="flex flex-col  gap-8 px-8 py-4 rounded-2xl bg-secondary/50">
                                                 <div
                                                     className="flex flex-col w-full gap-2"
-                                                    onClick={() =>
+                                                    onClick={(e) =>
                                                         copyToClipboard(
                                                             wallet.publicKey
                                                         )
@@ -458,11 +483,13 @@ const SolanaWalletActions = () => {
                                                     </span>
                                                     <div className="flex justify-between w-full items-center gap-2">
                                                         <p
-                                                            onClick={() =>
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+
                                                                 copyToClipboard(
                                                                     wallet.privateKey
-                                                                )
-                                                            }
+                                                                );
+                                                            }}
                                                             className="text-primary/80 font-medium cursor-pointer hover:text-primary transition-all duration-300 truncate"
                                                         >
                                                             {visiblePrivateKeys[
@@ -477,8 +504,9 @@ const SolanaWalletActions = () => {
                                                         </p>
                                                         <Button
                                                             variant="ghost"
-                                                            onClick={() =>
+                                                            onClick={(e) =>
                                                                 togglePrivateKeyVisibility(
+                                                                    e,
                                                                     i
                                                                 )
                                                             }
@@ -496,6 +524,7 @@ const SolanaWalletActions = () => {
                                             </div>
                                         </div>
                                     </motion.div>
+                                    // </Link>
                                 ))}
                         </div>
                     </motion.div>
