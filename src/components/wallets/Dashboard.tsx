@@ -30,7 +30,7 @@ export default function Dashboard() {
                         onClick={() => copyToClipboard(publicKey || "")}
                         className="text-lg truncate text-clip text-nowrap sm:text-3xl md:text-4xl font-bold hover:cursor-pointer tracking-tighter py-9 flex items-center gap-3"
                     >
-                        {publicKey?.slice(0, 5)}***** {publicKey?.slice(-5)}
+                        {publicKey?.slice(0, 5)}*****{publicKey?.slice(-5)}
                         <Copy />
                     </h1>
                 </div>
