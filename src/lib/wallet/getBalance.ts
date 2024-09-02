@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || "";
+const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL as string;
 
 export async function getSolanaBalance(address: string): Promise<number> {
     try {
