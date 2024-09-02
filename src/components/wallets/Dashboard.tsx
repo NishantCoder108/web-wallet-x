@@ -4,6 +4,7 @@ import { Copy, MoveLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import WalletTabs from "./WalletTabs";
+import { roboto_mono } from "@/lib/fonts";
 
 export default function Dashboard() {
     const searchParam = useSearchParams();
@@ -11,7 +12,7 @@ export default function Dashboard() {
     const publicKey = searchParam.get("pubkey");
 
     return (
-        <div>
+        <div className={roboto_mono.className}>
             <div>
                 <span
                     className="cursor-pointer font-bold flex hover:underline"
@@ -22,7 +23,7 @@ export default function Dashboard() {
                 </span>
             </div>
 
-            <div>
+            <div className="inline-block">
                 <h1
                     onClick={() => copyToClipboard(publicKey || "")}
                     className="text-lg truncate text-clip text-nowrap sm:text-3xl md:text-4xl font-bold hover:cursor-pointer tracking-tighter py-9 flex items-center gap-3"

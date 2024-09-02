@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Balance from "./Balance";
+import TransactionHistory from "./Transactions";
+import { roboto_mono } from "@/lib/fonts";
 
 const WalletTabs = () => {
     const [activeTab, setActiveTab] = useState("balance");
 
     return (
-        <div className="">
+        <div className={roboto_mono.className}>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
                     <TabsTrigger value="balance">Balance</TabsTrigger>
@@ -23,49 +25,7 @@ const WalletTabs = () => {
                 </TabsContent>
 
                 <TabsContent value="transaction-history">
-                    <div className="p-4">
-                        <h2 className="text-xl font-semibold mb-4">
-                            Transaction History
-                        </h2>
-                        <table className="min-w-full bg-white border border-gray-300">
-                            <thead>
-                                <tr>
-                                    <th className="py-2 px-4 border-b">Date</th>
-                                    <th className="py-2 px-4 border-b">
-                                        Amount
-                                    </th>
-                                    <th className="py-2 px-4 border-b">
-                                        Recipient
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {/* Example transaction data */}
-                                <tr>
-                                    <td className="py-2 px-4 border-b">
-                                        2024-09-02
-                                    </td>
-                                    <td className="py-2 px-4 border-b">
-                                        0.5 SOL
-                                    </td>
-                                    <td className="py-2 px-4 border-b">
-                                        Address 1
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="py-2 px-4 border-b">
-                                        2024-09-01
-                                    </td>
-                                    <td className="py-2 px-4 border-b">
-                                        2 SOL
-                                    </td>
-                                    <td className="py-2 px-4 border-b">
-                                        Address 2
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <TransactionHistory />
                 </TabsContent>
 
                 <TabsContent value="send">
