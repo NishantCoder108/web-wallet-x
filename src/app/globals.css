@@ -63,7 +63,31 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+/* styles/globals.css or any relevant CSS file */
+.truncate-middle {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  white-space: nowrap;
+}
+
+.truncate-middle::before {
+  content: '******';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  /* Adjust as needed */
+  padding: 0 0.5rem;
+  /* Adjust as needed */
 }
