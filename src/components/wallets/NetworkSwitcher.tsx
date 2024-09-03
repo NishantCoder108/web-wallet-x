@@ -10,7 +10,6 @@ const NetworkSwitcher: React.FC = () => {
     const searchParams = useSearchParams();
     const cluster = searchParams.get("cluster");
 
-    console.log("1 Cluster", cluster);
     const [selectedCluster, setSelectedCluster] = useState<string>(
         (cluster as string) || "devnet"
     );

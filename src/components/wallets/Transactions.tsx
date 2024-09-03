@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ParsedTransactionWithMeta } from "@solana/web3.js";
 
 import { getTransactionHistory } from "@/lib/wallet/getTransactionHistory";
-import { cn, copyToClipboard } from "@/lib/utils";
+import { cn, copyToClipboard, formattedTime } from "@/lib/utils";
 import {
     Table,
     TableBody,
@@ -56,7 +56,7 @@ const TransactionHistory = () => {
                                 Signature
                             </TableHead>
                             <TableHead className="w-[100px]">Block</TableHead>
-                            <TableHead className="w-[100px]">Time</TableHead>
+                            <TableHead className="w-[110px]">Time</TableHead>
                             <TableHead className="w-[100px]">By</TableHead>
                             <TableHead className="w-[100px]">
                                 Value (SOL)
@@ -88,11 +88,14 @@ const TransactionHistory = () => {
                                         {tx.slot}
                                     </TableCell>
                                     <TableCell className="">
-                                        {tx.blockTime
+                                        {/* {tx.blockTime
                                             ? new Date(
                                                   tx.blockTime * 1000
-                                              ).toLocaleTimeString()
-                                            : "N/A"}
+                                              ).toLocaleDateString()
+                                            : "N/A"} */}
+                                        {tx.blockTime
+                                            ? formattedTime(tx.blockTime * 1000)
+                                            : formattedTime(new Date())}
                                     </TableCell>
 
                                     <TableCell className="">
