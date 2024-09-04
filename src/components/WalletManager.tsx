@@ -30,9 +30,9 @@ const WalletManager = () => {
                     <Link href={"/wallet/solana"}>
                         <Button size={"lg"}>Solana</Button>
                     </Link>
-                    {/* <Link href={"/wallet/ethereum"}>
+                    <Link href={"/wallet/ethereum"}>
                         <Button size={"lg"}>Ethereum</Button>
-                    </Link> */}
+                    </Link>
                 </div>
             </motion.div>
         </div>
